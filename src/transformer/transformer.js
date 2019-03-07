@@ -1,14 +1,15 @@
 module.exports = ast => {
 	var rapport = [] ;
+	var note = 10;
+	var value = '';
 	var expressions = ast.body;
-	//add rapport note of expressions;
 	while (expressions.length > 0) {
 		var current_expression = expressions.shift();
 		switch(current_expression.type){
 			case 'VariableDeclarationExpression':
-				//check if variable name is well formed
-				//check if variable is used;
-				
+				if(current_expression.warning) {
+					note = note - 1
+				}
 				break;
 			case 'VariableAssignationExpression':
 				//check if variable is declared;
@@ -20,7 +21,9 @@ module.exports = ast => {
 				break;
 		}
 		rapport.push({ 'type' : current_expression.type,
-					   'note' : 5});
+					   'value' : current_expression.value});
 	}
+	rapport.push({ 'type' : 'note',
+					'note': note})
 	return rapport;
 }

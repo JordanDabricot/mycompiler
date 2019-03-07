@@ -1,29 +1,43 @@
 module.exports = tokens => {
+	var tokenValues = []
 	var AST = { body: [] };
 	var last_token = null;
+	tokens.forEach(token => {
+		if(token.type === "identifier") {
+			if(!tokenValues[token.value])
+				tokenValues[token.value] = 1
+			else
+				tokenValues[token.value]++;
+		}
+	});
+	for (var i in tokenValues) {
+		if(tokenValues[i] === 1) {
+			var expression = {
+				type: '',
+				value: '',
+				warning: "This variable is not used"
+			}
+		}
+	}
 	while (tokens.length > 0) {
-		var current_token = tokens.shift();
+		var current_token = tokens.shift()
 		switch(current_token.type){
-			case 'variable-declaraction':
-				var expression = {
-					type: 'VariableDeclarationExpression',
-					value: ''
-				}
+			case 'variable-declaraction-var':
+			case 'variable-declaraction-let':
+				expression.type = 'VariableDeclarationExpression';
 				var next = tokens.shift();
 				current_token= next;
 				if(next.type==="identifier"){
-					expression.value= next.value;
+					expression.value = next.value;
 				}else{
-					throw 'You have to define a identifier for a variable.';
+					throw 'You have to define an identifier for a variable.';
 				}
 				AST.body.push(expression);
 				break;
 			case 'equal':
 				if(last_token.type=="identifier"){
 					var expression = {
-						type: 'VariableAssignationExpression',
-						identifier: last_token.value,
-						value: ''
+						type: 'VariableAssignationExpression'
 					}
 					var next = tokens.shift();
 					current_token= next;
@@ -34,7 +48,8 @@ module.exports = tokens => {
 							expression.value = next;
 							break;
 						default:
-							throw 'You have to assigne a know type to variable '+last_token.value;
+							expression.warning = "You have to assigne a know type to variable " + last_token.value;
+							break;
 					}
 					AST.body.push(expression);
 					
@@ -43,20 +58,20 @@ module.exports = tokens => {
 			
 			case 'console-object':
 				var next = tokens.shift();
-				current_token= next;
-				if(next.type=="point"){
+				current_token = next;
+				if(next.type == "point"){
 					var expression = {
-						type: 'ConsoleUseMethodeExpression',
+						type : 'ConsoleUseMethodeExpression',
 						methode: '',
-						arguments: [],
+						arguments: []
 					}
 					next = tokens.shift();
-					current_token= next;
-					if(next.type==="identifier"){
+					current_token = next;
+					if(next.type === "identifier" || next.type === "method-console-log"){
 						expression.methode= next.value;
 						next = tokens.shift();
-						current_token= next;
-						if(next.type==="parenthesis-start"){
+						current_token = next;
+						if(next.type === "parenthesis-start"){
 							var isEnding= false;
 							do{
 								next= tokens.shift();
@@ -96,7 +111,7 @@ module.exports = tokens => {
 				break;
 			
 		}
-		last_token= current_token;
+		last_token = current_token;
 	}
 	return AST;
 }
